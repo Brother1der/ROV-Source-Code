@@ -22,6 +22,7 @@ print("Waiting for packets...")
 
 received_data = bytearray()
 last_receive_time = time.time()
+timeout_duration = 5.0  # seconds to wait before exiting
 
 while True:
     packet = rfm9x.receive(timeout=0.5)
@@ -38,6 +39,10 @@ while True:
 
         # Reset timeout timer
         last_receive_time = time.time()
+    
+    # Break if no packets received for timeout_duration
+    if time.time() - last_receive_time > timeout_duration:
+        break
 
 with open(filename, "wb") as f:
     f.write(received_data)
