@@ -1,12 +1,23 @@
+#Learn Guide: https://learn.adafruit.com/lora-and-lorawan-for-raspberry-pi
+#Last modified: 6/11/2024
+#Purpose: Split the float data into 252 byte chunks and send them over RFM9x
+#Requirements: 2 RPis with RFM9x LoRa modules, one running this code to send the data, and the other running the receiver code to receive the data and save it to a file.
+
 import busio
 from digitalio import DigitalInOut, Direction, Pull
 import board
-# Import the SSD1306 module.
 import adafruit_ssd1306
-# Import RFM9x
 import adafruit_rfm9x
+import time
 
 filename = "float_data.txt"
+
+# Configure RFM9x
+CS = DigitalInOut(board.CE1)
+RESET = DigitalInOut(board.D25)
+rfm9x = adafruit_rfm9x.RFM9x(CS, RESET, 915.0) #configures the board along with the frequency
+rfm9x.tx_power = 23
+prev_packet = None
 
 def split_packet(filename): #split the file into 252 byte chunks for rfm9x
     splits = []
