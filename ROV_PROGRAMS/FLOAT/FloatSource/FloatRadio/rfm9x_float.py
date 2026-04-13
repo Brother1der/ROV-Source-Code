@@ -10,8 +10,6 @@ import adafruit_ssd1306
 import adafruit_rfm9x
 import time
 
-filename = "float_data.txt"
-
 # Configure RFM9x
 CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
