@@ -85,6 +85,6 @@ class FloatVerticalProfiler:
 
     def send_data(self):
         #Runs the function to send the sensor data
-        split_packet("float_data.txt")
+        rfm9x_float.send_data("float_data.txt")
 
         self.cleanup()
