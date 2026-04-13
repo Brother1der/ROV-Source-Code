@@ -8,6 +8,7 @@
 #IMPORTS
 from FloatSource.FloatVerticalProfiler.pressureSensor import PressureSensorData
 from FloatSource.FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
+from FloatSource.FloatRadio import rfm9x_float
 
 #CONSTANTS
 DENSITY = 1000
@@ -81,5 +82,9 @@ class FloatVerticalProfiler:
         #Printing out sensor data
         float_data = self.sensor_data.package_data()
         self.write_to_file(str(float_data), "float_data.txt")
+
+    def send_data(self):
+        #Runs the function to send the sensor data
+        split_packet("float_data.txt")
 
         self.cleanup()
