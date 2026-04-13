@@ -17,19 +17,15 @@ rfm9x = adafruit_rfm9x.RFM9x(CS, RESET, 915.0) #configures the board along with 
 rfm9x.tx_power = 23
 prev_packet = None
 
-def split_packet(filename):
-    splits = []
+def send_data(filename):
+    #Split file into 252-byte chunks and send over RFM9x
     with open(filename, "rb") as f:
+        splits = []
         while True:
             chunk = f.read(252)
             if not chunk:
                 break
             splits.append(chunk)
-    return splits
-
-def send_data(filename):
-    """Send data file over RFM9x radio in 252-byte chunks"""
-    splits = split_packet(filename)
     
     for i, split_data in enumerate(splits):
         print(f"Sending split {i+1}/{len(splits)}")
