@@ -82,8 +82,7 @@ class FloatVerticalProfiler:
         #Printing out sensor data
         float_data = self.sensor_data.package_data()
         self.write_to_file(str(float_data), "float_data.txt")
-
-    def send_data(self):
+        
         #Runs the function to send the sensor data
         rfm9x_float.send_data("float_data.txt")
 

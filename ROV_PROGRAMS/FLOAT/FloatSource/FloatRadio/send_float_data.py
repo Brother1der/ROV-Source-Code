@@ -30,6 +30,7 @@ def send_data(filename):
     for i, split_data in enumerate(splits):
         print(f"Sending split {i+1}/{len(splits)}")
         rfm9x.send(split_data)
+        rfm9x.send(b"ACK") # Send ACK to receiver to indicate that the split has been sent
         
         ack_received = False
         timeout = 0
