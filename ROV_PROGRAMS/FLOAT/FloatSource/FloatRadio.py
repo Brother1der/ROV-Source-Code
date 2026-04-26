@@ -13,10 +13,6 @@ rfm9x = adafruit_rfm9x.RFM9x(CS, RESET, 915.0) #configures the board along with 
 rfm9x.tx_power = 23
 prev_packet = None
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-if SCRIPT_DIR not in sys.path:
-    sys.path.insert(0, SCRIPT_DIR)
-
 from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
 
 START_SIGNAL = b"start"
@@ -26,7 +22,7 @@ WAIT_POLL_SECONDS = 0.2
 
 
 def wait_for_signal() -> None:
-    print("Waiting for start signal from surface...")
+    print("Waiting for start signal...")
     while True:
         packet = rfm9x.receive(timeout=RECEIVE_TIMEOUT)
         if packet is None:
@@ -38,10 +34,10 @@ def wait_for_signal() -> None:
         if packet == START_SIGNAL:
             print("Start signal received.")
             rfm9x.send(ACK_SIGNAL)
-            print("ACK sent to surface backend.")
+            print("ACK sent.")
             return
 
-        print("Unexpected packet received; ignoring.")
+        print("Unexpected packet received, ignoring.")
 
 
 def main() -> None:
