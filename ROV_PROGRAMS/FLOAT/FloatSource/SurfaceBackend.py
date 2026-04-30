@@ -2,7 +2,7 @@
 #Purpose: Backend(?) for the float's website, sends signals between float and home and then recieves the 252 byte packets and saves them
 
 #script imports
-from FloatSource.FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
+from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
 
 #normal imports
 import busio
