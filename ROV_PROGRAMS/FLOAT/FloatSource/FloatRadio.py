@@ -14,6 +14,7 @@ rfm9x.tx_power = 23
 prev_packet = None
 
 from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
+from FloatRadio import send_float_data
 
 START_SIGNAL = b"start"
 ACK_SIGNAL = b"ACK"
@@ -48,12 +49,6 @@ def main() -> None:
         profiler.perform_profiles()
     except Exception as exc:
         print(f"Error running profile: {exc!r}")
-    finally:
-        try:
-            profiler.cleanup()
-        except Exception as cleanup_exc:
-            print(f"Cleanup failed: {cleanup_exc!r}")
-
 
 if __name__ == "__main__":
     main()
