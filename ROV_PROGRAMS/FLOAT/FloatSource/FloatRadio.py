@@ -15,7 +15,7 @@ rfm9x.tx_power = 23
 prev_packet = None
 
 from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
-from FloatRadio import send_float_data
+from FloatSource.FloatRadio.send_float_data import send_data
 
 START_SIGNAL = b"start"
 ACK_SIGNAL = b"ACK"
