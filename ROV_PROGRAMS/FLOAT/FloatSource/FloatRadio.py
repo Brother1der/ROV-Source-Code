@@ -7,9 +7,10 @@ import board
 import adafruit_ssd1306
 import adafruit_rfm9x
 
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 CS = DigitalInOut(board.CE1)
 RESET = DigitalInOut(board.D25)
-rfm9x = adafruit_rfm9x.RFM9x(CS, RESET, 915.0) #configures the board along with the frequency
+rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0) #configures the board along with the frequency
 rfm9x.tx_power = 23
 prev_packet = None
 
