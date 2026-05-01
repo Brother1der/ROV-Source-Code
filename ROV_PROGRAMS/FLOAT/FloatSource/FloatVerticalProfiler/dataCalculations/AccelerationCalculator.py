@@ -5,7 +5,7 @@
 #          velocities from depth samples, then differentiates those to get acceleration.
 # Requirements: Device with full python support. Pressure sensor float build.
 ###
-from FloatSource.FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
+from FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
 
 
 class AccelerationCalculator:

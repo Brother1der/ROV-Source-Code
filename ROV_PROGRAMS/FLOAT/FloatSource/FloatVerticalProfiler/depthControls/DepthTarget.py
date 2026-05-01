@@ -5,10 +5,10 @@
 #
 # Requirements: Device with full python support. Pressure sensor float build.
 ###
-from FloatSource.FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
-from FloatSource.FloatVerticalProfiler.dataCalculations.VeloctiyCalculator import VelocityCalculator
-from FloatSource.FloatVerticalProfiler.dataCalculations.AccelerationCalculator import AccelerationCalculator
-from FloatSource.FloatVerticalProfiler.motorControls.MotorController import MotorController
+from FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
+from FloatVerticalProfiler.dataCalculations.VeloctiyCalculator import VelocityCalculator
+from FloatVerticalProfiler.dataCalculations.AccelerationCalculator import AccelerationCalculator
+from FloatVerticalProfiler.motorControls.MotorController import MotorController
 import time
 import math
 

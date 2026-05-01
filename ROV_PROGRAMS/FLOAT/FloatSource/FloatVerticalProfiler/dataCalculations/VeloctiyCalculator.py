@@ -6,7 +6,7 @@
 #   Benchmarked against EMA, windowed-mean, linreg, SGolay, median+linreg.
 #   Kalman wins all noise scenarios (σ=2.5–20 mm) with zero lag.
 ###
-from FloatSource.FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
+from FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
 
 
 class VelocityCalculator:

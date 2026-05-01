@@ -4,7 +4,7 @@
 # Requirements: Device with full python support smbus2 library
 ###
 # Import the MS5837 sensor driver from the provided library
-from FloatSource.FloatVerticalProfiler.pressureSensor.pressureSensorDrivers import ms5837
+from FloatVerticalProfiler.pressureSensor.pressureSensorDrivers import ms5837
 import threading
 
 

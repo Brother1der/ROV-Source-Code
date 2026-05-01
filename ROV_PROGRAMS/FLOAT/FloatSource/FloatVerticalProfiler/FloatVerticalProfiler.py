@@ -6,8 +6,8 @@
 # ###
 
 #IMPORTS
-from FloatSource.FloatVerticalProfiler.pressureSensor import PressureSensorData
-from FloatSource.FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
+from FloatVerticalProfiler.pressureSensor import PressureSensorData
+from FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
 from FloatRadio.send_float_data import send_data
 
 #CONSTANTS

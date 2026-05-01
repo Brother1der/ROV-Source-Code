@@ -5,7 +5,7 @@
 ###
 
 # Import the pressureSensorData class, which handles asynchronous polling of pressure and temperature
-from FloatSource.FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
+from FloatVerticalProfiler.pressureSensor.PressureSensorData import PressureSensorData
 import time  # Import time module for delays and timestamps
 
 # Set the fluid density used for depth calculations (kg/m^3)

@@ -5,8 +5,8 @@
 ###
 
 #Importing the sensor and the sensor reader tool
-from FloatSource.FloatVerticalProfiler.pressureSensor.PressureSensor import PressureSensor
-from FloatSource.FloatVerticalProfiler.pressureSensor.SensorReader import SensorPoller
+from FloatVerticalProfiler.pressureSensor.PressureSensor import PressureSensor
+from FloatVerticalProfiler.pressureSensor.SensorReader import SensorPoller
 
 
 class PressureSensorData:
