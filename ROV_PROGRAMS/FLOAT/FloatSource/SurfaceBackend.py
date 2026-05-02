@@ -5,6 +5,7 @@
 from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
 
 #normal imports
+from typing import Optional, Callable
 import busio
 from digitalio import DigitalInOut, Direction, Pull
 import board
@@ -40,7 +41,7 @@ def start_vertical_profiler():
 
     return True
 
-def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0):
+def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0, on_first_packet: Optional[Callable[[], None]] = None):
     """
     Receive float data packets sent by send_float_data.py and save to file.
     Based on recieve_float_data.py functionality.
@@ -72,6 +73,8 @@ def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0
                 first_packet_received = True
                 last_receive_time = time.time()
                 print("First data packet received, starting 30-second timeout for subsequent packets")
+                if on_first_packet is not None:
+                    on_first_packet()
 
             # Append packet data
             received_data.extend(packet)

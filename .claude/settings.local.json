@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\oreil\\\\OneDrive\\\\Documents\\\\GitHub\\\\ROV-Source-Code\\\\ROV_PROGRAMS\\\\FLOAT\" | Where-Object { $_.PSIsContainer -eq $false } | Select-Object Name)"
+    ]
+  }
+}
