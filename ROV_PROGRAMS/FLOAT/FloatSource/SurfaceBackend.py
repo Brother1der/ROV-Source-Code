@@ -19,7 +19,6 @@ rfm9x = adafruit_rfm9x.RFM9x(CS, RESET, 915.0) #configures the board along with 
 rfm9x.tx_power = 23
 prev_packet = None
 
-
 def start_vertical_profiler():
     """Send start signal to float and wait for acknowledgment"""
     rfm9x.send(b"start")
@@ -41,19 +40,24 @@ def start_vertical_profiler():
 
     return True
 
-
 def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0):
     """
     Receive float data packets sent by send_float_data.py and save to file.
     Based on recieve_float_data.py functionality.
+    Waits indefinitely for the first packet, then applies a 30-second timeout for subsequent packets.
     """
     print("Waiting for float data packets...")
 
     received_data = bytearray()
-    last_receive_time = time.time()
+    last_receive_time = None
+    first_packet_received = False
 
     while True:
-        packet = rfm9x.receive(timeout=0.5)
+        # Wait indefinitely for first packet, then use timeout for subsequent packets
+        if first_packet_received:
+            packet = rfm9x.receive(timeout=0.5)
+        else:
+            packet = rfm9x.receive(timeout=None)
 
         if packet is not None:
             print(f"Received packet ({len(packet)} bytes)")
@@ -62,6 +66,12 @@ def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0
             if packet == b"ACK":
                 print("Received end-of-transmission signal")
                 break
+
+            # Mark first packet as received
+            if not first_packet_received:
+                first_packet_received = True
+                last_receive_time = time.time()
+                print("First data packet received, starting 30-second timeout for subsequent packets")
 
             # Append packet data
             received_data.extend(packet)
@@ -73,8 +83,8 @@ def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0
             # Reset timeout timer
             last_receive_time = time.time()
 
-        # Break if no packets received for timeout_duration
-        if time.time() - last_receive_time > timeout_duration:
+        # Break if no packets received for timeout_duration after first packet
+        if first_packet_received and time.time() - last_receive_time > timeout_duration:
             print(f"Timeout: No data received for {timeout_duration} seconds")
             break
 
@@ -85,7 +95,6 @@ def receive_float_data(filename="received_float_data.txt", timeout_duration=30.0
     print(f"File saved as {filename}")
     print(f"Total bytes received: {len(received_data)}")
     return filename
-
 
 def main():
     """Main function to demonstrate the surface backend functionality"""
@@ -101,7 +110,6 @@ def main():
         print("Data reception complete.")
     else:
         print("Failed to start float.")
-
 
 if __name__ == "__main__":
     main()
