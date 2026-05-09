@@ -1,7 +1,14 @@
 #thing that goes up and down for dive
 
+#Imports
 import time
 import board
+import os
+import sys
+import busio
+from digitalio import DigitalInOut, Direction, Pull
+import adafruit_ssd1306
+import adafruit_rfm9x
 from digitalio import DigitalInOut, Direction, Pull
 from FloatVerticalProfiler.motorControls.MotorController import MotorController
 
