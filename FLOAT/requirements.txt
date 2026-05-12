@@ -1,0 +1,6 @@
+smbus2
+RPi.GPIO
+flask
+flask-cors
+adafruit-circuitpython-rfm9x
+adafruit-circuitpython-ssd1306
