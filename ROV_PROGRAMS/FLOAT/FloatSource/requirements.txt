@@ -1,4 +1,0 @@
-smbus2
-RPi.GPIO
-flask
-flask-cors
