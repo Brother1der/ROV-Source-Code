@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# floatsurfacestart — launch the FLOAT Flask backend (gunicorn) and the React
+# frontend (vite) together. Run from the surface Pi. Ctrl-C stops both.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if   [ -d "$SCRIPT_DIR/venv" ];  then VENV="$SCRIPT_DIR/venv"
+elif [ -d "$SCRIPT_DIR/.venv" ]; then VENV="$SCRIPT_DIR/.venv"
+else
+  echo "Error: no venv at $SCRIPT_DIR/venv or $SCRIPT_DIR/.venv" >&2
+  echo "Create one with: python3 -m venv \"$SCRIPT_DIR/venv\" && \"$SCRIPT_DIR/venv/bin/pip\" install -r \"$SCRIPT_DIR/requirements.txt\" gunicorn" >&2
+  exit 1
+fi
+
+BACKEND_DIR="$SCRIPT_DIR/FLOAT/FloatSource"
+FRONTEND_DIR="$SCRIPT_DIR/FLOAT/FloatFrontend"
+
+# shellcheck disable=SC1091
+source "$VENV/bin/activate"
+
+if ! command -v gunicorn >/dev/null 2>&1; then
+  echo "Error: gunicorn not installed in venv. Run: pip install gunicorn" >&2
+  exit 1
+fi
+
+if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
+  echo "node_modules missing — installing frontend dependencies..."
+  ( cd "$FRONTEND_DIR" && npm install )
+fi
+
+BACKEND_PID=""
+cleanup() {
+  if [ -n "$BACKEND_PID" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
+    echo "Stopping backend (pid $BACKEND_PID)..."
+    kill "$BACKEND_PID" 2>/dev/null || true
+    wait "$BACKEND_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+echo "Starting Flask backend on 0.0.0.0:5000 (gunicorn -w 1 --threads 2)..."
+( cd "$BACKEND_DIR" && exec gunicorn -w 1 --threads 2 -b 0.0.0.0:5000 FloatAPI:app ) &
+BACKEND_PID=$!
+
+sleep 1
+if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+  echo "Error: backend failed to start — check the output above." >&2
+  exit 1
+fi
+
+echo "Starting Vite dev server (--host exposes it on the LAN)..."
+cd "$FRONTEND_DIR"
+npm run dev -- --host

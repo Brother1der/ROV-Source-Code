@@ -2,5 +2,6 @@ smbus2
 RPi.GPIO
 flask
 flask-cors
+gunicorn
 adafruit-circuitpython-rfm9x
 adafruit-circuitpython-ssd1306
