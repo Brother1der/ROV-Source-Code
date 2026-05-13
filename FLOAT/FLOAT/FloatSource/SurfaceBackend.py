@@ -2,7 +2,7 @@
 #Purpose: Backend(?) for the float's website, sends signals between float and home and then recieves the 252 byte packets and saves them
 
 #script imports
-from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
+from FloatVerticalProfiler import FloatVerticalProfiler
 
 #normal imports
 from typing import Optional, Callable
@@ -113,7 +113,7 @@ def main():
 
         print("Data reception complete.")
     else:
-        print("Failed to start float.")
+        main()
 
 if __name__ == "__main__":
     main()

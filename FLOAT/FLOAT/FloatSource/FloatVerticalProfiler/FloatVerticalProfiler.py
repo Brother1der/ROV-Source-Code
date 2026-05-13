@@ -8,7 +8,7 @@
 #IMPORTS
 from FloatVerticalProfiler.pressureSensor import PressureSensorData
 from FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
-from PiRadio.send_float_data import send_data
+from FloatRadioControls.send_float_data import send_data
 
 #CONSTANTS
 DENSITY = 1000
