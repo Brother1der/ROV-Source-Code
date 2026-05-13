@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 import Button from '@mui/material/Button';
 import type { MissionState, MissionStats } from '../../types/mission';
+import { formatTime } from '../../utils/formatTime';
 
 type Props = {
   missionState: MissionState;
@@ -40,7 +41,7 @@ export default function MissionControl({ missionState, onStart, onReset, stats }
     {
       icon: 'fa-clock',
       label: 'Duration',
-      value: stats.duration != null ? `${stats.duration} s` : '—',
+      value: stats.duration != null ? formatTime(stats.duration) : '—',
     },
     {
       icon: 'fa-chart-simple',

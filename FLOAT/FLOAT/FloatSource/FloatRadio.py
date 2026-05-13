@@ -23,7 +23,7 @@ RECEIVE_TIMEOUT = 0.5
 WAIT_POLL_SECONDS = 0.2
 
 
-def wait_for_signal() -> None:
+ =def wait_for_signal() -> None:
     print("Waiting for start signal...")
     while True:
         packet = rfm9x.receive(timeout=RECEIVE_TIMEOUT)

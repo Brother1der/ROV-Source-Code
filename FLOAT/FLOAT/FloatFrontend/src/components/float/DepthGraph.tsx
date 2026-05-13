@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import type { DataPoint, MissionState } from '../../types/mission';
+import { formatTime } from '../../utils/formatTime';
 
 type Props = {
   dataPoints: DataPoint[];
@@ -79,7 +80,7 @@ export default function DepthGraph({ dataPoints, maxDepth, missionState }: Props
                 stroke="#C8E0DF" strokeWidth="1" strokeDasharray="4 3" />
               <text x={x} y={PAD.top + GH + 14} textAnchor="middle"
                 fontSize="10" fill="#6B9E9B" fontFamily="monospace">
-                {Math.round(t)}s
+                {formatTime(t)}
               </text>
             </g>
           );
