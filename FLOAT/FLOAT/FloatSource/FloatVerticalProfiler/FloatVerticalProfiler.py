@@ -32,8 +32,8 @@ THREAD_PITCH_MM = 4         # Lead screw thread pitch
 MOTOR_RPM = 200             # Rated no-load; loaded shaft speed at the lead screw is ~122 RPM
 
 # Hall-effect limit switches on syringe (normally-closed, pull-up, active LOW)
-MIN_LIMIT_PIN = None                # syringe fully drained (max UP buoyancy)
-MAX_LIMIT_PIN = None                # syringe fully filled (max DOWN buoyancy)
+MIN_LIMIT_PIN = 8                # syringe fully drained (max UP buoyancy)
+MAX_LIMIT_PIN = 4               # syringe fully filled (max DOWN buoyancy)
 LIMIT_TRIGGERED_LEVEL = 0           # GPIO.input value when switch is at limit
 
 class FloatVerticalProfiler:
