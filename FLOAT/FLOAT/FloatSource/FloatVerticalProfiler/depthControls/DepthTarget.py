@@ -82,9 +82,9 @@ class DepthTarget:
         VEL_THRESH = 0.015       # above Kalman noise floor (~0.01 m/s)
         SYR_THRESH = 0.5
         SYR_DUTY = 15
-        VEL_DAMP_DUTY = 15
-        PULSE_ON = 0.2
-        EMERGENCY_DEPTH = 2.85
+        VEL_DAMP_DUTY = 25
+        PULSE_ON = 0.4
+        EMERGENCY_DEPTH = 4
         start = time.time()
         print(f"  settle: starting syr={self.syringe_est_mL:+.1f}mL")
 

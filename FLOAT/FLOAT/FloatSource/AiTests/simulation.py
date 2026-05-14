@@ -508,7 +508,7 @@ START_DEPTH = 0.0        # initial descent target before profile begins
 MAX_PROFILE_SECS = 800   # 7 minutes per profile (fail threshold)
 
 # Time acceleration
-SPEEDUP = 1
+SPEEDUP = 5
 
 
 def run_simulation():

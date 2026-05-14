@@ -15,7 +15,7 @@ from FloatRadioControls.send_float_data import send_data
 
 #CONSTANTS
 DENSITY = 1000
-HOLD_DURATION = 35
+HOLD_DURATION = 30
 DEPTH_TOLERANCE = 0.33
 START_DEPTH = 0.0
 UP = "CCW"      # Motor direction to drain syringe (ascend)
