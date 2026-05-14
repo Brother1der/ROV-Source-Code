@@ -6,6 +6,7 @@
 # Import the MS5837 sensor driver from the provided library
 from FloatVerticalProfiler.pressureSensor.pressureSensorDrivers import ms5837
 import threading
+import time
 
 
 # Define a class to interface with the MS5837 pressure sensor
@@ -27,17 +28,23 @@ class PressureSensor:
         # Create a sensor object for the MS5837-02BA variant (Bar02)
         self.sensor = ms5837.MS5837_02BA()
 
-        # Attempt to initialize the sensor
-        # init() returns True if successful, False otherwise
-        if not self.sensor.init():
-            print("Sensor could not be initialized")
-            exit(1)
-        
-        # Attempt an initial read to verify communication with the sensor
-        # read() returns True if successful, False otherwise
-        if not self.sensor.read():
-            print("Sensor read failed!")
-            exit(1)
+        # Retry init() + first read() until both succeed. Transient I2C errors
+        # (loose connector, bus contention at startup) are common; one failed
+        # boot shouldn't kill the float. Rebuild the sensor object each round
+        # so a failed SMBus open also gets retried.
+        attempt = 0
+        retry_delay = 1.0
+        while True:
+            attempt += 1
+            try:
+                if self.sensor.init() and self.sensor.read():
+                    break
+                print(f"Sensor init/read failed on attempt {attempt}, retrying in {retry_delay:g}s...")
+            except Exception as exc:
+                print(f"Sensor init attempt {attempt} raised {exc!r}, retrying in {retry_delay:g}s...")
+            time.sleep(retry_delay)
+            self.sensor = ms5837.MS5837_02BA()
+        print(f"Sensor ready (attempt {attempt}).")
 
         # Lock to serialize I2C access from multiple polling threads
         self._lock = threading.Lock()

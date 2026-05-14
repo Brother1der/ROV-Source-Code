@@ -5,6 +5,8 @@
 ###
 
 #Importing the sensor and the sensor reader tool
+import time
+
 from FloatVerticalProfiler.pressureSensor.PressureSensor import PressureSensor
 from FloatVerticalProfiler.pressureSensor.SensorReader import SensorPoller
 
@@ -36,6 +38,20 @@ class PressureSensorData:
         self.temperatureData = SensorPoller(self.pressureSensor.get_temperature, self.POLLING_TIME)
         self.depthData.start()
         self.temperatureData.start()
+
+        # Block until both pollers have produced a first sample so downstream
+        # consumers can safely subscript get_latest_*(). Without this, the
+        # control loop can call _read() in the ~100ms gap before the polling
+        # thread's first I2C round-trip completes, and crash on None[1].
+        deadline = time.time() + 2.0
+        while (self.depthData.get_latest() is None
+               or self.temperatureData.get_latest() is None):
+            if time.time() > deadline:
+                raise RuntimeError(
+                    "Pressure sensor produced no samples within 2s — "
+                    "check I2C wiring (i2cdetect -y 1 should show 0x76)."
+                )
+            time.sleep(0.02)
 
     # -------------------------
     # DEPTH GETTERS
