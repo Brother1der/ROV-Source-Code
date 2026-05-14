@@ -7,7 +7,7 @@ export function getNow(): string {
     .join(':');
 }
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://172.20.10.2:5000';
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 
 export async function apiStartMission(): Promise<void> {
   const res = await fetch(`${API_BASE}/api/start`, { method: 'POST' });
