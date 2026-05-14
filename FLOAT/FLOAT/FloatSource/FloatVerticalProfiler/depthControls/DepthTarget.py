@@ -78,11 +78,11 @@ class DepthTarget:
         3. VEL_DAMP: if syringe near neutral but still moving, gently oppose
         4. DONE: both settled
         """
-        FILL_DUTY_PER_METER = 14.77
+        FILL_DUTY_PER_METER = 47.3   # 14.77 × 3.2 for 200-RPM motor (loaded ~122 RPM)
         VEL_THRESH = 0.015       # above Kalman noise floor (~0.01 m/s)
         SYR_THRESH = 0.5
-        SYR_DUTY = 15
-        VEL_DAMP_DUTY = 25
+        SYR_DUTY = 48                # matches motor stall floor (5.75 V on 12 V supply)
+        VEL_DAMP_DUTY = 80           # 25 × 3.2
         PULSE_ON = 0.4
         EMERGENCY_DEPTH = 4
         start = time.time()
@@ -117,7 +117,7 @@ class DepthTarget:
                 if direction == self.DOWN:
                     stall_threshold = int(FILL_DUTY_PER_METER * depth)
                     effective_duty = max(SYR_DUTY, stall_threshold + 1)
-                    effective_duty = min(85, effective_duty)
+                    effective_duty = min(100, effective_duty)
                 self._drive(direction, effective_duty)
                 time.sleep(PULSE_ON)
                 self.motorController.set_speed(0)
@@ -137,7 +137,7 @@ class DepthTarget:
                 if direction == self.DOWN:
                     stall_threshold = int(FILL_DUTY_PER_METER * depth)
                     effective_duty = max(duty, stall_threshold + 1)
-                    effective_duty = min(85, effective_duty)
+                    effective_duty = min(100, effective_duty)
                 self._drive(direction, effective_duty)
                 time.sleep(PULSE_ON)
                 self.motorController.set_speed(0)
@@ -210,10 +210,10 @@ class DepthTarget:
         BRAKE_GAIN = 2.0           # tanh profile: avoids premature mid-transit braking
         MIN_VEL = 0.005
         MIN_DUTY = 0               # CRITICAL: allow motor to stop when vel_err ≈ 0
-        MAX_DUTY = 85
-        MAX_DRIVE_DUTY = 15        # limits syringe drain per pulse cycle
-        MAX_BRAKE_DUTY = 50        # prevents excessive rebound buoyancy
-        KP_VEL = 600               # duty per m/s
+        MAX_DUTY = 100             # PWM ceiling (was 85 × 3.2 = 272, capped)
+        MAX_DRIVE_DUTY = 48        # drain-per-pulse limit, raised to clear stall floor
+        MAX_BRAKE_DUTY = 100       # was 50 × 3.2 = 160, capped
+        KP_VEL = 1920              # duty per m/s — 600 × 3.2 for 200-RPM motor
         VEL_HYST = 0.020           # wider than Kalman noise to prevent chatter
         EMERGENCY_DEPTH = 2.85
         MIN_SAFE_DEPTH = 0.10
@@ -233,9 +233,9 @@ class DepthTarget:
 
         # Fill compensation: water pressure opposes syringe fill (DOWN direction).
         # Empirical: 2.4 kg·cm torque needed at 2.5m → scales linearly with depth.
-        # duty_offset = (2.4/2.5 × depth) / 6.5 rated × 100 = 14.77% per meter
+        # Was 14.77%/m on the 122-RPM motor; scaled 3.2× for the 200-RPM motor.
         # Drain (UP) is pressure-assisted — no offset needed.
-        FILL_DUTY_PER_METER = 14.77
+        FILL_DUTY_PER_METER = 47.3
 
         zone_entry = None
         settled_start = None   # time when vel first dropped below VEL_EXIT
@@ -412,13 +412,13 @@ class DepthTarget:
 
           If |error| > tolerance: call go_to_target to re-acquire.
         """
-        Kd        = 300    # velocity damping (reduced from 800 to prevent overshoot)
-        Kp        = 20     # position restore (reduced from 50 to prevent oscillation)
-        DEADBAND  = 10     # minimum correction threshold
-        MAX_DUTY  = 65     # high enough for fill compensation to clear stall at 2.5m depth
-        MIN_DUTY  = 10
+        Kd        = 960    # velocity damping — 300 × 3.2 for 200-RPM motor
+        Kp        = 64     # position restore — 20 × 3.2
+        DEADBAND  = 48     # raised above 32 (= 10×3.2) so non-zero commands clear stall
+        MAX_DUTY  = 100    # PWM ceiling (was 65 × 3.2 = 208, capped)
+        MIN_DUTY  = 48     # raised above 32 (= 10×3.2) so non-zero commands clear stall
         MIN_DEPTH = 0.10
-        FILL_DUTY_PER_METER = 14.77  # fill compensation: 14.77% per meter depth
+        FILL_DUTY_PER_METER = 47.3   # 14.77 × 3.2 for 200-RPM motor
 
         # Credit time already spent in zone during go_to_target approach
         if self.hold_start_time is not None and self.hold_target == target_depth:
@@ -440,7 +440,7 @@ class DepthTarget:
             # Surface safety: if too shallow, drive DOWN at full power
             # Skip when target IS the surface or far from target (transit, not overshoot)
             if depth < MIN_DEPTH and target_depth > MIN_DEPTH and abs(error) < 1.0:
-                SURFACE_DUTY = 85
+                SURFACE_DUTY = 100
                 self._drive(self.DOWN, SURFACE_DUTY)
                 rate_mL_s = (SURFACE_DUTY / 100.0) * 10.1
                 self._update_syringe(-(rate_mL_s * self.INTERVAL))

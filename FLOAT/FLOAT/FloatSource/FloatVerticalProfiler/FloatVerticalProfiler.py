@@ -29,7 +29,7 @@ END_DEPTH = 1000
 SYRINGE_RADIUS_MM = 20      # Inner radius of syringe barrel (40mm bore / 2)
 SYRINGE_LENGTH_MM = 114     # Stroke length of the plunger
 THREAD_PITCH_MM = 4         # Lead screw thread pitch
-MOTOR_RPM = 122             # Motor speed
+MOTOR_RPM = 200             # Rated no-load; loaded shaft speed at the lead screw is ~122 RPM
 
 # Hall-effect limit switches on syringe (normally-closed, pull-up, active LOW)
 MIN_LIMIT_PIN = None                # syringe fully drained (max UP buoyancy)
@@ -80,7 +80,7 @@ class FloatVerticalProfiler:
             self.depth_target.go_to_target(HIGH_TARGET_DEPTH, k_stop=650.0, max_compress_ml=15.0, max_expand_ml=2.0, hold_zone=0.29, max_vel=0.03)
             self.depth_target.depth_hold(HIGH_TARGET_DEPTH, duration=35.0, tolerance=0.29)
 
-    def sink_to_bottom(self, fill_duty=85, pulse_on=0.2, pulse_off=0.8, safety_timeout=180.0):
+    def sink_to_bottom(self, fill_duty=100, pulse_on=0.2, pulse_off=0.8, safety_timeout=180.0):
         # Drive syringe DOWN (filling) until the MAX hall switch triggers.
         # Pool depth is unknown — switch is the only termination. Falls back
         # to wall-clock timeout if the pin isn't wired yet.
@@ -137,9 +137,9 @@ class FloatVerticalProfiler:
     def perform_profiles(self):
         # Settle motion, then zero the syringe estimator at deployment trim
         # (water temp/chemistry varies day-to-day; ~50 g positive buoyancy expected).
-        print("Ready to settle")
+
         self.depth_target.settle()
-        print("settling")
+
         self.depth_target.calibrate_syringe()
         print("Going to target")
         # Two full profiles: 2.5m -> 0.4m -> 2.5m -> 0.4m, 35-s holds each
