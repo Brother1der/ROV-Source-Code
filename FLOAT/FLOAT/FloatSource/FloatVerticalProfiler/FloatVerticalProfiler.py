@@ -137,9 +137,11 @@ class FloatVerticalProfiler:
     def perform_profiles(self):
         # Settle motion, then zero the syringe estimator at deployment trim
         # (water temp/chemistry varies day-to-day; ~50 g positive buoyancy expected).
+        print("Ready to settle")
         self.depth_target.settle()
+        print("settling")
         self.depth_target.calibrate_syringe()
-
+        print("Going to target")
         # Two full profiles: 2.5m -> 0.4m -> 2.5m -> 0.4m, 35-s holds each
         self.complete_profile()
 
