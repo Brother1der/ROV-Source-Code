@@ -24,6 +24,11 @@ class DepthTarget:
 
     INTERVAL = 0.3  # control loop period (s)
 
+    # Physical syringe volume limit: π × r² × L (r=20mm, L=114mm) ≈ 143.3 mL.
+    # Estimator is clamped to this range so gate checks reflect reality even
+    # when the motor stalls at a limit without a wired hall-effect switch.
+    SYRINGE_MAX_ML = math.pi * (0.020 ** 2) * 0.114 * 1e6  # ≈ 143.3 mL
+
     def __init__(self, sensor_data: PressureSensorData, up: str, down: str):
         self.UP = up
         self.DOWN = down
@@ -50,6 +55,13 @@ class DepthTarget:
     def calibrate_syringe(self):
         """Zero the syringe estimator. Call when float is neutrally buoyant."""
         self.syringe_est_mL = 0.0
+
+    def _update_syringe(self, delta_mL: float):
+        """Update and clamp the syringe estimator to physical limits."""
+        self.syringe_est_mL = max(
+            -self.SYRINGE_MAX_ML,
+            min(self.SYRINGE_MAX_ML, self.syringe_est_mL + delta_mL)
+        )
 
     def settle(self, timeout=25.0):
         """
@@ -112,10 +124,8 @@ class DepthTarget:
                 stall_thr = int(FILL_DUTY_PER_METER * depth) if direction == self.DOWN else 0
                 if effective_duty >= stall_thr:
                     rate_mL_s = (effective_duty / 100.0) * 10.1
-                    if direction == self.DOWN:
-                        self.syringe_est_mL -= rate_mL_s * PULSE_ON
-                    else:
-                        self.syringe_est_mL += rate_mL_s * PULSE_ON
+                    delta = -(rate_mL_s * PULSE_ON) if direction == self.DOWN else (rate_mL_s * PULSE_ON)
+                    self._update_syringe(delta)
                 print(f"  settle: depth={depth:.3f} vel={vel:+.3f} syr={self.syringe_est_mL:+.1f}mL SYR_PUMP {direction} {effective_duty}%")
                 time.sleep(0.3)
 
@@ -134,10 +144,8 @@ class DepthTarget:
                 stall_thr = int(FILL_DUTY_PER_METER * depth) if direction == self.DOWN else 0
                 if effective_duty >= stall_thr:
                     rate_mL_s = (effective_duty / 100.0) * 10.1
-                    if direction == self.DOWN:
-                        self.syringe_est_mL -= rate_mL_s * PULSE_ON
-                    else:
-                        self.syringe_est_mL += rate_mL_s * PULSE_ON
+                    delta = -(rate_mL_s * PULSE_ON) if direction == self.DOWN else (rate_mL_s * PULSE_ON)
+                    self._update_syringe(delta)
                 print(f"  settle: depth={depth:.3f} vel={vel:+.3f} syr={self.syringe_est_mL:+.1f}mL VEL_DAMP {direction} {effective_duty}%")
                 time.sleep(0.3)
 
@@ -256,7 +264,7 @@ class DepthTarget:
                 time.sleep(PULSE_OFF)
                 if MAX_DUTY > 0:
                     rate_mL_s = (MAX_DUTY / 100.0) * 10.1
-                    self.syringe_est_mL -= rate_mL_s * PULSE_ON
+                    self._update_syringe(-(rate_mL_s * PULSE_ON))
                 continue
 
             # Exit: within position tolerance AND velocity settled for MIN_SETTLE_SECS (or timed out)
@@ -380,16 +388,14 @@ class DepthTarget:
                 stall_thr = int(FILL_DUTY_PER_METER * depth) if direction == self.DOWN else 0
                 if effective_duty >= stall_thr:
                     rate_mL_s = (effective_duty / 100.0) * 10.1
-                    if direction == self.DOWN:
-                        self.syringe_est_mL -= rate_mL_s * PULSE_ON
-                    else:
-                        self.syringe_est_mL += rate_mL_s * PULSE_ON
+                    delta = -(rate_mL_s * PULSE_ON) if direction == self.DOWN else (rate_mL_s * PULSE_ON)
+                    self._update_syringe(delta)
 
     # ------------------------------------------------------------------
     # Hold at target depth
     # ------------------------------------------------------------------
 
-    def depth_hold(self, target_depth: float, duration: float = 35.0, tolerance: float = 0.33):
+    def depth_hold(self, target_depth: float, duration: float = 35.0, tolerance: float = 0.33, max_fill_ml: float = 15.0):
         """
         Hold at target_depth for `duration` seconds (wall-clock, always counting).
 
@@ -437,7 +443,7 @@ class DepthTarget:
                 SURFACE_DUTY = 85
                 self._drive(self.DOWN, SURFACE_DUTY)
                 rate_mL_s = (SURFACE_DUTY / 100.0) * 10.1
-                self.syringe_est_mL -= rate_mL_s * self.INTERVAL
+                self._update_syringe(-(rate_mL_s * self.INTERVAL))
                 print(f"  hold: SURFACE SAFETY depth={depth:.3f} < {MIN_DEPTH}m, driving DOWN {SURFACE_DUTY}% syr={self.syringe_est_mL:+.1f}mL")
                 self._wait(t)
                 continue
@@ -462,6 +468,11 @@ class DepthTarget:
                     duty = int(min(MAX_DUTY, max(MIN_DUTY, abs(correction))))
                     effective_duty = duty
                     if direction == self.DOWN:
+                        if self.syringe_est_mL < -max_fill_ml:
+                            self.motorController.set_speed(0)
+                            print(f"  hold: depth={depth:.3f} vel={vel:+.3f} FILL_CAP syr={self.syringe_est_mL:+.1f}mL")
+                            self._wait(t)
+                            continue
                         fill_offset = int(FILL_DUTY_PER_METER * depth)
                         effective_duty = min(MAX_DUTY, duty + fill_offset)
                     self._drive(direction, effective_duty)
@@ -469,11 +480,11 @@ class DepthTarget:
                     stall_thr = int(FILL_DUTY_PER_METER * depth) if direction == self.DOWN else 0
                     if effective_duty >= stall_thr:
                         rate_mL_s = (effective_duty / 100.0) * 10.1
-                        if direction == self.DOWN:
-                            self.syringe_est_mL -= rate_mL_s * self.INTERVAL
-                        else:
-                            self.syringe_est_mL += rate_mL_s * self.INTERVAL
+                        delta = -(rate_mL_s * self.INTERVAL) if direction == self.DOWN else (rate_mL_s * self.INTERVAL)
+                        self._update_syringe(delta)
                     print(f"  hold: depth={depth:.3f} vel={vel:+.3f} err={error:+.3f} "
                           f"PD={correction:+.1f} {direction} {effective_duty}%({duty}+fill)  ({hold_timer:.0f}/{duration:.0f}s) syr={self.syringe_est_mL:+.1f}mL")
 
             self._wait(t)
+
+        self.motorController.set_speed(0)

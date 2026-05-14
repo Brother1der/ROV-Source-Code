@@ -1,0 +1,10 @@
+# Python virtual environments
+FLOAT/floatenv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS
+.DS_Store
+Thumbs.db

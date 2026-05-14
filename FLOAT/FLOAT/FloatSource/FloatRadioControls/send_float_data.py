@@ -29,21 +29,21 @@ def send_data(filename):
             splits.append(chunk)
     
     for i, split_data in enumerate(splits):
-        print(f"Sending split {i+1}/{len(splits)}")
-        rfm9x.send(split_data)
-        rfm9x.send(b"ACK") # Send ACK to receiver to indicate that the split has been sent
-        
-        ack_received = False
-        timeout = 0
-        
-        while not ack_received and timeout < 50:
-            packet = rfm9x.receive(timeout=0.1)
-            if packet == b"ACK":
-                print(f"Split {i+1} acknowledged")
-                ack_received = True
-            timeout += 1
-        
-        if not ack_received:
-            print(f"Split {i+1} failed (no ACK)")
+        while True:
+            print(f"Sending split {i+1}/{len(splits)}")
             rfm9x.send(split_data)
-            time.sleep(0.1)
+            rfm9x.send(b"ACK") # Send ACK to receiver to indicate that the split has been sent
+
+            ack_received = False
+            for _ in range(50):
+                packet = rfm9x.receive(timeout=0.1)
+                if packet == b"ACK":
+                    ack_received = True
+                    break
+
+            if ack_received:
+                print(f"Split {i+1} acknowledged")
+                break
+
+            print(f"Split {i+1} no ACK, retrying")
+            time.sleep(0.5)

@@ -1,13 +1,14 @@
 """
-Simulation for DepthTarget controller
+Simulation for FloatVerticalProfiler.perform_profiles flow
 Uses the real DepthTarget class as control logic
 Replaces hardware with simulated physics + sensor layer
 
-Pool environment model:
-  1. Sensor noise:    depth σ = 0.05 m, temp σ = 0.1 °C  (MS5837-30BA)
-  2. Water current:   gentle pump circulation only, σ ≈ 0.003 m/s
+Pool environment model (small outdoor pool, low wind):
+  1. Sensor noise:    depth σ = 0.02 m, temp σ = 0.1 °C  (MS5837-30BA)
+  2. Water current:   gentle wind-driven circulation, σ ≈ 0.005 m/s
   3. Density:         uniform freshwater at 78 °F (25.56 °C), 997.0 kg/m³
-  4. Surface waves:   none (smooth pool, no wind)
+  4. Surface chop:    1.5 cm amplitude, 1.5 s period, decays with depth
+                      (consistent with ~5 mph wind on a small pool)
   5. Full drag/buoyancy physics with mass, Cd, and cross-section
 """
 
@@ -19,9 +20,9 @@ import random
 import threading
 from collections import deque
 
-# DepthTarget imports use bare 'FloatVerticalProfiler.*' paths, so its
-# parent directory (FloatSource) must be on sys.path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
+# DepthTarget imports use bare 'FloatVerticalProfiler.*' paths, so
+# FloatSource (the parent of AiTests) must be on sys.path.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Mock RPi.GPIO so MotorController can be imported on non-Pi hardware
 import types
@@ -60,8 +61,8 @@ sys.modules["FloatVerticalProfiler.pressureSensor.pressureSensorDrivers"] = type
     "FloatVerticalProfiler.pressureSensor.pressureSensorDrivers")
 sys.modules["FloatVerticalProfiler.pressureSensor.pressureSensorDrivers.ms5837"] = _mock_ms5837_pkg
 
-# Import your real controller
-from FloatSource.FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
+# Import your real controller (matches FloatVerticalProfiler's bare-path imports)
+from FloatVerticalProfiler.depthControls.DepthTarget import DepthTarget
 
 
 # ============================================================
@@ -75,14 +76,21 @@ TEMP_NOISE_STDDEV = 0.1     # °C
 # Pool: 78 °F = 25.56 °C, well-mixed — uniform temperature throughout
 BASE_TEMPERATURE = 25.56    # °C
 
-# Pool circulation: gentle pump return jets, very low vertical current
+# Outdoor pool circulation: light wind-driven mixing, low vertical current
 CURRENT_MEAN = 0.0          # m/s
-CURRENT_SIGMA = 0.003       # m/s std dev (10× lower than open water)
-CURRENT_TAU = 30.0          # seconds correlation time (slow, steady circulation)
+CURRENT_SIGMA = 0.005       # m/s std dev (light wind chop / circulation)
+CURRENT_TAU = 20.0          # seconds correlation time
 
 # Pool water: freshwater at 25.56 °C, uniform density (no thermocline)
 SURFACE_DENSITY = 997.0     # kg/m³
 DENSITY_GRADIENT = 0.0      # kg/m³ per meter depth (well-mixed)
+
+# Surface chop: low-amplitude wave from light wind on a small outdoor pool.
+# Affects the float as a depth oscillation that decays exponentially with depth
+# (deep-water gravity wave kinematics). Negligible by ~0.5m down.
+WAVE_AMPLITUDE = 0.0        # m  (set > 0 only to stress-test surface behaviour)
+WAVE_PERIOD = 1.5           # s
+WAVE_DECAY_DEPTH = 0.4      # m — depth at which amplitude drops to 1/e
 
 # Physics timestep
 PHYSICS_DT = 0.01           # 100 Hz
@@ -128,8 +136,20 @@ class SimulatedFloat:
         ou_diffusion = CURRENT_SIGMA * math.sqrt(2 * theta * dt) * random.gauss(0, 1)
         self.current += ou_drift + ou_diffusion
 
-        # --- Volume change from motor ---
-        self.volume_offset += self.volume_rate * dt
+        # --- Volume change from motor; clamp at physical syringe limits ---
+        # π × (0.020m)² × 0.114m ≈ 1.432e-4 m³ = 143.2 mL
+        SYRINGE_MAX_M3 = math.pi * (0.020 ** 2) * 0.114
+        new_vol = self.volume_offset + self.volume_rate * dt
+        if new_vol >= SYRINGE_MAX_M3:
+            self.volume_offset = SYRINGE_MAX_M3
+            if self.volume_rate > 0:   # draining further — stalled
+                self.volume_rate = 0.0
+        elif new_vol <= -SYRINGE_MAX_M3:
+            self.volume_offset = -SYRINGE_MAX_M3
+            if self.volume_rate < 0:   # filling further — stalled
+                self.volume_rate = 0.0
+        else:
+            self.volume_offset = new_vol
 
         # --- Forces ---
         # Local density at current depth
@@ -155,8 +175,14 @@ class SimulatedFloat:
         self.depth -= self.velocity * dt  # velocity integrated by force model
         self.depth += self.current * dt   # ambient current contribution
 
-        # Clamp syringe volume to 200ml usable (±100ml from neutral)
-        self.volume_offset = max(-0.0001, min(0.0001, self.volume_offset))
+        # Surface chop: wave-driven vertical bobbing, decays with depth.
+        # Modeled as instantaneous displacement velocity (orbital motion of water
+        # particles in a deep-water wave). Negligible past ~3× decay depth.
+        if WAVE_AMPLITUDE > 0:
+            omega = 2 * math.pi / WAVE_PERIOD
+            decay = math.exp(-max(self.depth, 0.0) / WAVE_DECAY_DEPTH)
+            wave_vel = WAVE_AMPLITUDE * omega * decay * math.cos(omega * self.sim_time)
+            self.depth -= wave_vel * dt  # rising-positive convention
 
         # Clamp at physical boundaries
         if self.depth < 0:
@@ -488,13 +514,13 @@ SPEEDUP = 1
 def run_simulation():
 
     print("=" * 65)
-    print("  FLOAT BUOYANCY ENGINE — SIMULATION RUN")
-    print("  Environment: indoor pool (78 °F / 25.56 °C, freshwater, smooth surface)")
-    print(f"  Sensor noise:  depth σ={DEPTH_NOISE_STDDEV}m, temp σ={TEMP_NOISE_STDDEV}°C")
-    print(f"  Water current: σ={CURRENT_SIGMA} m/s, τ_corr={CURRENT_TAU}s (gentle circulation)")
-    print(f"  Density:       {SURFACE_DENSITY} kg/m³ uniform (no thermocline)")
-    print(f"  Surface waves: none")
-    print(f"  Float: mass={12.0}kg, Cd={0.9}, area={0.015}m²")
+    print("  FLOAT BUOYANCY ENGINE - SIMULATION RUN")
+    print("  Environment: small outdoor pool (78F / 25.56C, freshwater, low wind)")
+    print(f"  Sensor noise:  depth stddev={DEPTH_NOISE_STDDEV}m, temp stddev={TEMP_NOISE_STDDEV}C")
+    print(f"  Water current: stddev={CURRENT_SIGMA} m/s, tau={CURRENT_TAU}s (wind-driven)")
+    print(f"  Density:       {SURFACE_DENSITY} kg/m3 uniform (no thermocline)")
+    print(f"  Surface chop:  A={WAVE_AMPLITUDE}m, T={WAVE_PERIOD}s, decay={WAVE_DECAY_DEPTH}m")
+    print(f"  Float: mass={12.0}kg, Cd={0.9}, area={0.015}m2")
     print(f"  Speedup: {SPEEDUP}x")
     print("=" * 65)
     print()
@@ -550,14 +576,19 @@ def run_simulation():
     report_thread.start()
 
     # --- Run mission ---
-    # Profile sequence: 0.4m -> 2.5m -> 0.4m -> 2.5m -> 0.4m (no holds)
-    print(f"Starting mission: {START_DEPTH}m -> {LOW_TARGET_DEPTH}m -> {HIGH_TARGET_DEPTH}m -> {LOW_TARGET_DEPTH}m -> {HIGH_TARGET_DEPTH}m")
+    # Mirrors FloatVerticalProfiler.perform_profiles:
+    #   settle -> calibrate_syringe -> 4 legs (2.5/0.4 x 2 with 35s holds)
+    # sink_to_bottom + wait_for_surface + send_data are hardware-coupled
+    # (MAX hall switch, LoRa radio) and not simulated here.
+    print(f"Starting mission: settle -> calibrate -> "
+          f"{LOW_TARGET_DEPTH}m -> {HIGH_TARGET_DEPTH}m -> {LOW_TARGET_DEPTH}m -> {HIGH_TARGET_DEPTH}m")
     print("-" * 65)
 
     profile_start = time.time()
 
-    print(f"\n  >>> Initial drop to {START_DEPTH}m")
-    controller.go_to_target(START_DEPTH)
+    print(f"\n  >>> Startup: settle motion + calibrate syringe estimator")
+    controller.settle()
+    controller.calibrate_syringe()
 
     print(f"\n  >>> Leg 1: descend to {LOW_TARGET_DEPTH}m")
     controller.go_to_target(LOW_TARGET_DEPTH, k_stop=800.0, hold_zone=0.33)
@@ -565,26 +596,17 @@ def run_simulation():
     print(f"\n  >>> Leg 1 hold: hold at {LOW_TARGET_DEPTH}m")
     controller.depth_hold(LOW_TARGET_DEPTH, duration=35.0, tolerance=0.33)
 
-    print(f"\n  >>> Settling before Leg 2...")
-    controller.settle()
-
     print(f"\n  >>> Leg 2: ascend to {HIGH_TARGET_DEPTH}m")
     controller.go_to_target(HIGH_TARGET_DEPTH, k_stop=650.0, max_compress_ml=15.0, max_expand_ml=2.0, hold_zone=0.29, max_vel=0.03)
 
     print(f"\n  >>> Leg 2 hold: hold at {HIGH_TARGET_DEPTH}m")
     controller.depth_hold(HIGH_TARGET_DEPTH, duration=35.0, tolerance=0.29)
 
-    print(f"\n  >>> Settling before Leg 3...")
-    controller.settle()
-
     print(f"\n  >>> Leg 3: descend to {LOW_TARGET_DEPTH}m")
     controller.go_to_target(LOW_TARGET_DEPTH, k_stop=800.0, hold_zone=0.33)
 
     print(f"\n  >>> Leg 3 hold: hold at {LOW_TARGET_DEPTH}m")
     controller.depth_hold(LOW_TARGET_DEPTH, duration=35.0, tolerance=0.33)
-
-    print(f"\n  >>> Settling before Leg 4...")
-    controller.settle()
 
     print(f"\n  >>> Leg 4: ascend to {HIGH_TARGET_DEPTH}m — MISSION COMPLETE")
     controller.go_to_target(HIGH_TARGET_DEPTH, k_stop=650.0, max_compress_ml=15.0, max_expand_ml=2.0, hold_zone=0.29, max_vel=0.03)

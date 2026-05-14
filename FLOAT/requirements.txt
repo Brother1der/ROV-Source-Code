@@ -1,7 +1,8 @@
-smbus2
-RPi.GPIO
 flask
 flask-cors
 gunicorn
-adafruit-circuitpython-rfm9x
-adafruit-circuitpython-ssd1306
+# Pi-only hardware deps (skipped on Windows dev machines)
+smbus2; platform_system == "Linux"
+RPi.GPIO; platform_system == "Linux"
+adafruit-circuitpython-rfm9x; platform_system == "Linux"
+adafruit-circuitpython-ssd1306; platform_system == "Linux"
