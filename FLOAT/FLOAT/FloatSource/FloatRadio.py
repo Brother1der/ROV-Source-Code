@@ -15,7 +15,6 @@ rfm9x.tx_power = 23
 prev_packet = None
 
 from FloatVerticalProfiler.FloatVerticalProfiler import FloatVerticalProfiler
-from FloatSource.FloatRadio.send_float_data import send_data
 
 START_SIGNAL = b"start"
 ACK_SIGNAL = b"ACK"
@@ -23,7 +22,7 @@ RECEIVE_TIMEOUT = 0.5
 WAIT_POLL_SECONDS = 0.2
 
 
- =def wait_for_signal() -> None:
+def wait_for_signal() -> None:
     print("Waiting for start signal...")
     while True:
         packet = rfm9x.receive(timeout=RECEIVE_TIMEOUT)
