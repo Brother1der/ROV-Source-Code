@@ -56,12 +56,12 @@ export default function FloatDashboard(): JSX.Element {
             setMissionState(next);
 
             if (next === 'running') {
-              addMsg('LoRa ACK received — float mission started', 'success');
+              addMsg('Lakeview Subaquatics Float — float mission started', 'success');
             } else if (next === 'receiving') {
-              addMsg('Float has surfaced — data packets arriving…', 'info');
+              addMsg('Lakeview Subaquatics Float - Float has surfaced — data packets arriving…', 'info');
             } else if (next === 'complete') {
               stopPolling();
-              addMsg('Transmission complete — fetching data…', 'success');
+              addMsg('Lakeview Subaquatics Float - Transmission complete — fetching data…', 'success');
               apiGetData()
                 .then(data => {
                   setDataPoints(data.depthPoints);
