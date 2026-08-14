@@ -11,6 +11,8 @@ Big ol repo for all the code used in the ROV club (or most of it, idk where elli
   - Max. TX Power	21±1dBm
   - Power Supply 3 ~5V (USB), 3 ~4.2(Battery)
   - Dimensions	58.08 * 22.6* 8.2 mm
+  - HTIT-WS-HF: For EU868, IN865, US915, AU915, AS923, KR920 and other LPW networks with operating frequencies between 863~928MHz.
+  - Max. Receiving sensitivity: -134 dBm
 
 ## __What Pins Do What?__
   - GPIO 35: Onboard White LED
