@@ -11,8 +11,8 @@ Big ol repo for all the code used in the ROV club (or most of it, idk where elli
 
 ## __What Pins Do What?__
   - GPIO 35: Onboard White LED
-  - scl pin is 18
-  - sda pin is 17
+  - SCL = 18
+  - SDA = 17
   - SS (CS)= 8
   - SCK (CLK)= 9
   - MOSI = 10
