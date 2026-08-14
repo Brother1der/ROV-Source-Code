@@ -7,7 +7,10 @@ Big ol repo for all the code used in the ROV club (or most of it, idk where elli
   - Running on ESP32-S3 MicroPython (Link to download page: https://micropython.org/download/ESP32_GENERIC_S3/)
   - Guide to install MicroPython on it: https://wiki.heltec.org/docs/devices/open-source-hardware/esp32-series/three-platform/Micropython
   - Chip is SX1262
-  - uPy lib for chip: https://github.com/git512/micropySX126X 
+  - uPy lib for chip: https://github.com/git512/micropySX126X
+  - Max. TX Power	21±1dBm
+  - Power Supply 3 ~5V (USB), 3 ~4.2(Battery)
+  - Dimensions	58.08 * 22.6* 8.2 mm
 
 ## __What Pins Do What?__
   - GPIO 35: Onboard White LED
