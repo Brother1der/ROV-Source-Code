@@ -1,5 +1,5 @@
 # ROV SOURCE CODE
-Big ol repo for all the code used in the ROV club (or most of it, idk where elliot's code is)
+Big ol repo for all the code used in the ROV club (or most of it, idk where elliot's code is[its in the rov section{conner}])
 
 ## __INFO ABT THE NEW FLOAT BOARD__
 
