@@ -13,6 +13,8 @@ Big ol repo for all the code used in the ROV club (or most of it, idk where elli
   - Dimensions	58.08 * 22.6* 8.2 mm
   - HTIT-WS-HF: For EU868, IN865, US915, AU915, AS923, KR920 and other LPW networks with operating frequencies between 863~928MHz.
   - Max. Receiving sensitivity: -134 dBm
+  - boot.py runs at boot, will mess stuff up if you put anything that runs forever on this
+  - main.py is what you should run the programs you want on
 
 ## __What Pins Do What?__
   - GPIO 35: Onboard White LED
