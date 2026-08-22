@@ -1,3 +1,6 @@
+__NOTE FROM GRAHAM:__
+THIS WILL NOT WORK WITH THE NEW FLOAT CHIPS. They only run micropython, so all of this is useless for rn
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -71,5 +74,3 @@ export default defineConfig([
   },
 ])
 ```
-__NOTE FROM GRAHAM:__
-THIS WILL NOT WORK WITH THE NEW FLOAT CHIPS. They only run micropython, so all of this is useless for rn
