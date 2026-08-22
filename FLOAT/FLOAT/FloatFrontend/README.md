@@ -71,3 +71,5 @@ export default defineConfig([
   },
 ])
 ```
+__NOTE FROM GRAHAM:__
+THIS WILL NOT WORK WITH THE NEW FLOAT CHIPS. They only run micropython, so all of this is useless for rn
