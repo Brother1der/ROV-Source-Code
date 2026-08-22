@@ -35,10 +35,6 @@ oled = ssd1306.SSD1306_I2C(
     addr=0x3C
 )
 
-# =========================
-# SX1262 SETUP
-# =========================
-
 sx = SX1262(
     spi_bus=1,
     clk=9,
@@ -69,19 +65,11 @@ sx.begin(
     blocking=True
 )
 
-# =========================
-# STARTUP SCREEN
-# =========================
-
 oled.fill(0)
 oled.text("LORA RX", 0, 0)
 oled.text("923 MHz", 0, 12)
 oled.text("WAITING...", 0, 24)
 oled.show()
-
-# =========================
-# RECEIVE LOOP
-# =========================
 
 while True:
 
@@ -101,10 +89,6 @@ while True:
         # Print to serial terminal too
         print("Received:", msg)
         print("Status:", status)
-
-        # =========================
-        # DISPLAY ON OLED
-        # =========================
 
         oled.fill(0)
 
