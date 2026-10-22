@@ -1,0 +1,6 @@
+keyboard==0.13.5
+meshlib==3.1.1.211
+moviepy==2.2.1
+numpy==2.2.6
+pycolmap==3.12.5
+pymavlink==2.4.49
