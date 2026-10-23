@@ -1,0 +1,11 @@
+path: dataset
+train: images/train
+val: images/val
+
+names:
+  0: native_crab
+  1: european_green_crab
+  2: claw
+  3: lane_marker
+  4: pool_vent
+  5: servo_motor
