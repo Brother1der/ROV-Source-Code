@@ -8,6 +8,7 @@ Big ol repo for all the code used in the ROV club
   - Guide to install MicroPython on it: https://wiki.heltec.org/docs/devices/open-source-hardware/esp32-series/three-platform/Micropython
   - Chip is SX1262
   - uPy lib for chip: https://github.com/git512/micropySX126X
+  - python lib for pressure sensor: https://github.com/bluerobotics/ms5837-python
   - Max. TX Power	21±1dBm
   - Power Supply 3 ~5V (USB), 3 ~4.2(Battery)
   - Dimensions	58.08 * 22.6* 8.2 mm
