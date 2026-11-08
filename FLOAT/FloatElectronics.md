@@ -1,5 +1,5 @@
 # FLOAT ELECTRONICS NOTES
-wanted to make a thing that explains what all the stuff for the float is and what it does so that anyone else who has to mess around with the board or make a new one has all the information and for me to thinkkk
+wanted to make a thing that explains what all the stuff for the float is and what it does so that anyone else who has to mess around with the board or make a new one has all the information
 
 ## Board   
 - Heltec Wireless Stick [https://heltec.org/project/wireless-stick-v3/]
