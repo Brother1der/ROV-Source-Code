@@ -11,7 +11,7 @@ wanted to make a thing that explains what all the stuff for the float is and wha
 list of individual components on or connected to the PCB
 
 ### Motor Driver
-- Pololu G2 High-Power Motor Driver 18v17 (or something similar, idk for sure) [https://www.pololu.com/product/2991]
+- VNH5019 Motor Driver Carrier (or something similar, idk for sure) [https://www.pololu.com/product/1451]
 - Controls the motor by using PWM signals from the stick and turning those 5v signals into 12v signals for our brushless dc motor
 - Has reverse current protection
 - Needs 5v and 12v
