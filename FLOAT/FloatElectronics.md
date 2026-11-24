@@ -17,7 +17,7 @@ list of individual components on or connected to the PCB
 - Needs 5v and 12v
 
 ### 5v Converter
-- Pololu 5V, 5A Step-Down Voltage Regulator D24V50F5 (or similar) [https://www.pololu.com/product/2851]
+- Pololu 5V, 5A Step-Down Voltage Regulator D24V50F5 (or similar) [https://www.pololu.com/product/4892]
 - Takes the 12v power from the battery and converts it for use for the board 
 
 ### Pressure Sensor
